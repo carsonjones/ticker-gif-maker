@@ -85,7 +85,8 @@ export const DEFAULT_CONFIG: Config = {
     spacing: 2,
     pixelColor: '#00ff00',
     bgColor: '#000000',
-    gridColor: '#1a1a1a',
+    gridColor: '#000000',
+    // gridColor: '#1a1a1a',
     verticalPadding: 40,
     horizontalPadding: 40,
   },
@@ -112,7 +113,7 @@ export const DEFAULT_CONFIG: Config = {
     ],
     flashCurve: 'ease',
     fps: 20, // lower FPS = faster export
-    textScale: 6,
+    textScale: 7,
     defaultEntry: 'from-left',
     defaultExit: 'to-right',
   },
@@ -127,8 +128,10 @@ export const DEFAULT_CONFIG: Config = {
     },
     resize: {
       enabled: true,
-      maxWidth: 2048,
-      maxHeight: 2048,
+      // maxWidth: 2048,
+      // maxHeight: 2048,
+      maxWidth: 1280,
+      maxHeight: 1280,
       method: 'sample', // best for pixel art - no antialiasing
     },
   },
