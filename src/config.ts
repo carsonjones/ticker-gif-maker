@@ -51,6 +51,22 @@ export type OutputConfig = {
   path: string;
   previewMode?: false;
   previewPath?: string;
+  format?: 'gif' | 'mp4' | 'both'; // Output format (default: gif)
+  mp4?: {
+    path?: string; // Optional separate path for MP4 (default: replace .gif with .mp4)
+    quality?: number; // CRF value: 0-51, lower is better (default: 18)
+    preset?:
+      | 'ultrafast'
+      | 'superfast'
+      | 'veryfast'
+      | 'faster'
+      | 'fast'
+      | 'medium'
+      | 'slow'
+      | 'slower'
+      | 'veryslow';
+    pixelFormat?: 'yuv420p' | 'yuv444p'; // yuv420p for compatibility, yuv444p for quality
+  };
   compress?: {
     enabled: boolean;
     colors?: number;
@@ -80,20 +96,36 @@ export type Config = {
 export const DEFAULT_CONFIG: Config = {
   grid: {
     width: 600,
-    height: 300,
+    height: 80,
     pixelSize: 8,
     spacing: 2,
     pixelColor: '#00ff00',
     bgColor: '#000000',
-    gridColor: '#000000',
-    // gridColor: '#1a1a1a',
+    // gridColor: '#000000',
+    gridColor: '#1a1a1a',
     verticalPadding: 40,
     horizontalPadding: 40,
   },
   animation: {
     phrases: [
       {
-        text: 'HAPPY HOLIDAYS',
+        text: 'HOWDY',
+        pauseBeforeSeconds: 1,
+        pauseDuringSeconds: 2,
+        entry: 'from-left',
+        exit: 'to-bottom',
+        flashColors: ['#00ff00', '#ffff00', '#ff8800', '#ff0000'],
+      },
+      {
+        text: "I'M CARSON",
+        pauseBeforeSeconds: 1,
+        pauseDuringSeconds: 2,
+        entry: 'from-right',
+        exit: 'to-top',
+        flashColors: ['#00ff00', '#ffff00', '#ff8800', '#00ff00'],
+      },
+      {
+        text: "LET'S BUILD",
         pauseBeforeSeconds: 1,
         pauseDuringSeconds: 2,
         entry: 'from-top',
@@ -121,6 +153,13 @@ export const DEFAULT_CONFIG: Config = {
     path: 'output/animation.gif',
     previewMode: false,
     previewPath: 'output/preview.png',
+    format: 'both', // 'gif', 'mp4', or 'both'
+    mp4: {
+      // path: 'output/animation.mp4', // Optional: defaults to replacing .gif with .mp4
+      quality: 18, // Lower = better quality (0-51, default 23)
+      preset: 'medium', // Encoding speed vs compression ratio
+      pixelFormat: 'yuv420p', // yuv420p for compatibility, yuv444p for quality
+    },
     compress: {
       enabled: true,
       colors: 256,
