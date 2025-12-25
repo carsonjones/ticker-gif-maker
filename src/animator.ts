@@ -83,24 +83,20 @@ export class Animator {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }
 
-  getColorAtFrame(frameIndex: number, totalFrames: number): string {
-    if (
-      !this.animationConfig.flashColors ||
-      this.animationConfig.flashColors.length === 0
-    ) {
+  getColorAtFrame(frameIndex: number, totalFrames: number, phrase?: import('./config').PhraseConfig): string {
+    const colors = phrase?.flashColors || this.animationConfig.flashColors;
+    const curve = phrase?.flashCurve || this.animationConfig.flashCurve || 'linear';
+
+    if (!colors || colors.length === 0) {
       return this.gridConfig.pixelColor;
     }
 
-    const colors = this.animationConfig.flashColors;
     if (colors.length === 1) {
       return colors[0]!;
     }
 
     const t = frameIndex / Math.max(1, totalFrames - 1);
-    const easedT = this.applyEasing(
-      t,
-      this.animationConfig.flashCurve || 'linear',
-    );
+    const easedT = this.applyEasing(t, curve);
 
     const segmentCount = colors.length - 1;
     const segmentIndex = Math.min(
@@ -137,20 +133,25 @@ export class Animator {
       centerY,
       textWidth,
       phrase.text,
+      phrase,
     );
     frames.push(...entryFrames);
     totalFrameCount += entryFrames.length;
 
     // Generate pause frames at center
-    for (let i = 0; i < this.animationConfig.pauseFrames; i++) {
+    const pauseFrameCount = phrase.pauseDuringSeconds !== undefined
+      ? Math.ceil(phrase.pauseDuringSeconds * this.animationConfig.fps)
+      : this.animationConfig.pauseFrames;
+
+    for (let i = 0; i < pauseFrameCount; i++) {
       frames.push({
         textX: centerX,
         textY: centerY,
-        color: this.getColorAtFrame(totalFrameCount + i, totalFrameCount + this.animationConfig.pauseFrames),
+        color: this.getColorAtFrame(totalFrameCount + i, totalFrameCount + pauseFrameCount, phrase),
         text: phrase.text,
       });
     }
-    totalFrameCount += this.animationConfig.pauseFrames;
+    totalFrameCount += pauseFrameCount;
 
     // Generate exit frames
     if (exit !== 'stay' && exit !== 'none') {
@@ -161,6 +162,7 @@ export class Animator {
         centerY,
         textWidth,
         phrase.text,
+        phrase,
       );
       frames.push(...exitFrames);
     }
@@ -175,6 +177,7 @@ export class Animator {
     centerY: number,
     textWidth: number,
     text: string,
+    phrase?: import('./config').PhraseConfig,
   ): Frame[] {
     const frames: Frame[] = [];
 
@@ -246,7 +249,7 @@ export class Animator {
       frames.push({
         textX: x,
         textY: y,
-        color: this.getColorAtFrame(i, frameCount),
+        color: this.getColorAtFrame(i, frameCount, phrase),
         text,
       });
     }
@@ -256,7 +259,8 @@ export class Animator {
 
   generateFrames(): Frame[] {
     const allFrames: Frame[] = [];
-    const centerY = Math.floor((this.gridConfig.height - this.textHeight) / 2);
+    const vPadding = this.gridConfig.verticalPadding ?? 2;
+    const centerY = Math.floor((this.gridConfig.height - this.textHeight) / 2) + vPadding;
 
     for (const phrase of this.animationConfig.phrases) {
       // Add pause frames before this phrase

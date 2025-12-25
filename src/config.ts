@@ -6,6 +6,7 @@ export type GridConfig = {
   pixelColor: string;
   bgColor: string;
   gridColor?: string;
+  verticalPadding?: number;
 };
 
 export type TransitionDirection =
@@ -26,8 +27,11 @@ export type ExitTransition =
 export type PhraseConfig = {
   text: string;
   pauseBeforeSeconds?: number;
+  pauseDuringSeconds?: number; // override global pauseFrames
   entry?: TransitionDirection; // override global entry
   exit?: ExitTransition; // override global exit
+  flashColors?: string[]; // override global flashColors
+  flashCurve?: 'linear' | 'ease' | 'bounce'; // override global flashCurve
 };
 
 export type AnimationConfig = {
@@ -68,15 +72,36 @@ export const DEFAULT_CONFIG: Config = {
     pixelColor: '#00ff00',
     bgColor: '#000000',
     gridColor: '#1a1a1a',
+    verticalPadding: 2,
   },
   animation: {
     phrases: [
-      { text: 'HOWDY', pauseBeforeSeconds: 0 },
-      { text: 'FOLKS', pauseBeforeSeconds: 1 },
+      {
+        text: 'HOWDY',
+        pauseBeforeSeconds: 0,
+        pauseDuringSeconds: 2,
+        flashColors: ['#00ff00', '#ffff00', '#00ff00'],
+      },
+      {
+        text: "I'M CARSON",
+        pauseBeforeSeconds: 1,
+        pauseDuringSeconds: 2,
+        entry: 'from-top',
+        exit: 'to-bottom',
+        flashColors: ['#ff00ff', '#00ffff', '#ff00ff'],
+      },
+      {
+        text: 'LETS MAKE STUFF',
+        pauseBeforeSeconds: 2,
+        pauseDuringSeconds: 0,
+        entry: 'from-left',
+        exit: 'to-right',
+        flashColors: ['#ff0000', '#ff8800', '#ffff00', '#ff8800', '#ff0000'],
+      },
     ],
     scrollSpeed: 4,
     pauseFrames: 30,
-    flashColors: ['#00ff00', '#ffff00', '#00ff00'],
+    flashColors: ['#00ff00', '#ffff00', '#ff8800', '#ff0000', '#ff00ff', '#00ff00'],
     flashCurve: 'ease',
     fps: 20, // lower FPS = faster export
     textScale: 9,

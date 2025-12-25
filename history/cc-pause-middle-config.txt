@@ -1,0 +1,95 @@
+
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Sonnet 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   ~/src/home/readme-gfx
+
+> can we have a config per phrase on how long it should pause in between 
+entry and exit? 
+
+⏺ I'll help you add per-phrase pause configuration. Let me first check the current config structure.
+
+⏺ Read(src/config.ts)
+  ⎿  Read 108 lines
+
+⏺ Read(src/index.ts)
+  ⎿  Error reading file
+
+⏺ Search(pattern: "**/*.ts")
+  ⎿  Found 100 files (ctrl+o to expand)
+
+⏺ Search(pattern: "src/**/*.ts")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+⏺ Read(src/animator.ts)
+  ⎿  Read 332 lines
+
+⏺ I'll add per-phrase pause config for the hold duration between entry/exit animations.
+
+⏺ Update(src/config.ts)
+  ⎿  Added 1 line                                                        
+      26  export type PhraseConfig = {                                   
+      27    text: string;                                                
+      28    pauseBeforeSeconds?: number;                                 
+      29 +  pauseDuringSeconds?: number; // override global pauseFrames  
+      30    entry?: TransitionDirection; // override global entry        
+      31    exit?: ExitTransition; // override global exit               
+      32  };                                                             
+
+⏺ Update(src/animator.ts)
+  ⎿  Added 7 lines, removed 3 lines                                      
+      142      totalFrameCount += entryFrames.length;                    
+      143                                                                
+      144      // Generate pause frames at center                        
+      145 -    for (let i = 0; i < this.animationConfig.pauseFrames;     
+          -i++) {                                                        
+      145 +    const pauseFrameCount = phrase.pauseDuringSeconds !==     
+          +undefined                                                     
+      146 +      ? Math.ceil(phrase.pauseDuringSeconds *                 
+          +this.animationConfig.fps)                                     
+      147 +      : this.animationConfig.pauseFrames;                     
+      148 +                                                              
+      149 +    for (let i = 0; i < pauseFrameCount; i++) {               
+      150        frames.push({                                           
+      151          textX: centerX,                                       
+      152          textY: centerY,                                       
+      153 -        color: this.getColorAtFrame(totalFrameCount + i,      
+          -totalFrameCount + this.animationConfig.pauseFrames),          
+      153 +        color: this.getColorAtFrame(totalFrameCount + i,      
+          +totalFrameCount + pauseFrameCount),                           
+      154          text: phrase.text,                                    
+      155        });                                                     
+      156      }                                                         
+      157 -    totalFrameCount += this.animationConfig.pauseFrames;      
+      157 +    totalFrameCount += pauseFrameCount;                       
+      158                                                                
+      159      // Generate exit frames                                   
+      160      if (exit !== 'stay' && exit !== 'none') {                 
+
+⏺ Update(src/config.ts)
+  ⎿  Added 2 lines, removed 1 line                                       
+      72    },                                                           
+      73    animation: {                                                 
+      74      phrases: [                                                 
+      75 -      { text: 'HOWDY', pauseBeforeSeconds: 0 },                
+      75 +      { text: 'HOWDY', pauseBeforeSeconds: 0,                  
+         +pauseDuringSeconds: 2 },                                       
+      76        {                                                        
+      77          text: "I'M CARSON",                                    
+      78          pauseBeforeSeconds: 1,                                 
+      79 +        pauseDuringSeconds: 1.5,                               
+      80          entry: 'from-top',                                     
+      81          exit: 'to-bottom',                                     
+      82        },                                                       
+
+⏺ Done. Added pauseDuringSeconds to PhraseConfig - overrides global pauseFrames per phrase.
+
+  Usage:
+  {
+    text: 'HOWDY',
+    pauseDuringSeconds: 2  // holds 2sec between entry/exit
+  }
+
+  Falls back to global pauseFrames if not set.
+
+
+

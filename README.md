@@ -1,15 +1,7 @@
-# readme-gfx
+# GIF Marquee Maker
 
-To install dependencies:
+Edit /src/config.ts then...
 
-```bash
-bun install
 ```
-
-To run:
-
-```bash
 bun run index.ts
 ```
-
-This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
