@@ -1,6 +1,6 @@
-import type { CanvasRenderingContext2D } from '@napi-rs/canvas';
-// @ts-expect-error - gif-encoder-2 missing type defs
-import GifEncoder from 'gif-encoder-2';
+import type { Canvas } from '@napi-rs/canvas';
+import { $ } from 'bun';
+import { mkdirSync, rmSync } from 'node:fs';
 
 export class GifExporter {
   private width: number;
@@ -14,25 +14,28 @@ export class GifExporter {
   }
 
   async exportGif(
-    contexts: CanvasRenderingContext2D[],
+    contexts: { canvas: Canvas }[],
     outputPath: string,
   ): Promise<void> {
-    const encoder = new GifEncoder(this.width, this.height, 'octree');
+    const tempDir = '.tmp-frames';
 
-    encoder.setRepeat(0);
-    encoder.setDelay(Math.floor(1000 / this.fps));
-    encoder.setQuality(10);
+    // Create temp dir
+    mkdirSync(tempDir, { recursive: true });
 
-    encoder.start();
+    try {
+      // Export frames as PNGs
+      console.log(`Exporting ${contexts.length} frames...`);
+      for (let i = 0; i < contexts.length; i++) {
+        const buffer = await contexts[i]!.canvas.encode('png');
+        await Bun.write(`${tempDir}/frame-${String(i).padStart(5, '0')}.png`, buffer);
+      }
 
-    for (const ctx of contexts) {
-      const imageData = ctx.getImageData(0, 0, this.width, this.height);
-      encoder.addFrame(imageData.data);
+      // Use ffmpeg to create GIF
+      console.log('Encoding GIF with ffmpeg...');
+      await $`ffmpeg -y -framerate ${this.fps} -i ${tempDir}/frame-%05d.png -vf "split[s0][s1];[s0]palettegen=max_colors=256[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5" ${outputPath}`;
+    } finally {
+      // Clean up temp files
+      rmSync(tempDir, { recursive: true, force: true });
     }
-
-    encoder.finish();
-
-    const buffer = encoder.out.getData();
-    await Bun.write(outputPath, buffer);
   }
 }

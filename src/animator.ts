@@ -288,15 +288,16 @@ export class Animator {
     return allFrames;
   }
 
-  async renderFrames(): Promise<SKRSContext2D[]> {
+  async renderFrames(): Promise<{ canvas: import('@napi-rs/canvas').Canvas; context: SKRSContext2D }[]> {
     const frames = this.generateFrames();
-    const contexts: SKRSContext2D[] = [];
+    const results: { canvas: import('@napi-rs/canvas').Canvas; context: SKRSContext2D }[] = [];
     const scale = this.animationConfig.textScale || 1;
 
     // Cache text grids to avoid re-computing
     const textGridCache = new Map<string, boolean[][]>();
 
     for (const frame of frames) {
+      // Create new renderer per frame to get separate canvas
       const renderer = new Renderer(this.gridConfig);
       renderer.clearCanvas();
 
@@ -319,10 +320,12 @@ export class Animator {
         );
       }
 
-      const ctx = renderer.getContext();
-      contexts.push(ctx);
+      results.push({
+        canvas: renderer.getCanvas(),
+        context: renderer.getContext(),
+      });
     }
 
-    return contexts;
+    return results;
   }
 }

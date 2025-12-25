@@ -1,0 +1,54 @@
+{
+  "formatter": {
+    "external": {
+      "command": "bunx",
+      "arguments": ["@biomejs/biome", "format", "--stdin-file-path", "{buffer_path}"]
+    }
+  },
+  "format_on_save": "on",
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "enable": false
+      }
+    }
+  },
+  "languages": {
+    "TypeScript": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": ["@biomejs/biome", "format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "format_on_save": "on"
+    },
+    "JavaScript": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": ["@biomejs/biome", "format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": ["@biomejs/biome", "format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "formatter": {
+        "external": {
+          "command": "bunx",
+          "arguments": ["@biomejs/biome", "format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "format_on_save": "on"
+    }
+  }
+}

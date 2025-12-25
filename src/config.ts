@@ -78,7 +78,7 @@ export const DEFAULT_CONFIG: Config = {
     pauseFrames: 30,
     flashColors: ['#00ff00', '#ffff00', '#00ff00'],
     flashCurve: 'ease',
-    fps: 30,
+    fps: 20, // lower FPS = faster export
     textScale: 9,
     defaultEntry: 'from-left',
     defaultExit: 'to-right',

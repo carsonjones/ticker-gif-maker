@@ -1,5 +1,4 @@
 import { Animator } from './src/animator';
-import { compressGif } from './src/compress';
 import { DEFAULT_CONFIG } from './src/config';
 import { GifExporter } from './src/gif-exporter';
 import { generatePreview } from './src/preview';
@@ -45,12 +44,6 @@ async function main() {
 
   console.log(`Exporting GIF to ${config.output.path}...`);
   await gifExporter.exportGif(contexts, config.output.path);
-
-  if (config.output.compress?.enabled) {
-    console.log('Compressing GIF...');
-    await compressGif(config.output.path, config.output.compress);
-    console.log('Compression complete');
-  }
 
   console.log('Done!');
 }
