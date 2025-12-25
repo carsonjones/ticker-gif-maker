@@ -1,8 +1,6 @@
-# GIF Marquee Maker
-
 ![welcome](output/animation.gif)
 
-Edit /src/config.ts then...
+Edit `/src/config.ts` then...
 
 ```
 bun run index.ts
