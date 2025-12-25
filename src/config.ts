@@ -8,26 +8,38 @@ export type GridConfig = {
   gridColor?: string;
 };
 
+export type TransitionDirection =
+  | 'from-left'
+  | 'from-right'
+  | 'from-top'
+  | 'from-bottom'
+  | 'center';
+
+export type ExitTransition =
+  | 'to-left'
+  | 'to-right'
+  | 'to-top'
+  | 'to-bottom'
+  | 'stay'
+  | 'none';
+
 export type PhraseConfig = {
   text: string;
-  pauseBeforeSeconds?: number; // pause before showing this phrase
+  pauseBeforeSeconds?: number;
+  entry?: TransitionDirection; // override global entry
+  exit?: ExitTransition; // override global exit
 };
 
 export type AnimationConfig = {
   phrases: PhraseConfig[];
   scrollSpeed: number;
   pauseFrames: number;
-  stopAtCenter: boolean;
   flashColors?: string[];
   flashCurve?: 'linear' | 'ease' | 'bounce';
   fps: number;
   textScale?: number;
-  direction?:
-    | 'left-to-right'
-    | 'right-to-left'
-    | 'center'
-    | 'top-to-bottom'
-    | 'bottom-to-top';
+  defaultEntry: TransitionDirection;
+  defaultExit: ExitTransition;
 };
 
 export type OutputConfig = {
@@ -64,12 +76,12 @@ export const DEFAULT_CONFIG: Config = {
     ],
     scrollSpeed: 4,
     pauseFrames: 30,
-    stopAtCenter: true,
     flashColors: ['#00ff00', '#ffff00', '#00ff00'],
     flashCurve: 'ease',
     fps: 30,
     textScale: 9,
-    direction: 'left-to-right',
+    defaultEntry: 'from-left',
+    defaultExit: 'to-right',
   },
   output: {
     path: 'output/animation.gif',

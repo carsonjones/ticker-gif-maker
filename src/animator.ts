@@ -117,129 +117,138 @@ export class Animator {
   }
 
   generatePhraseFrames(
-    text: string,
+    phrase: import('./config').PhraseConfig,
     textWidth: number,
     centerY: number,
   ): Frame[] {
     const frames: Frame[] = [];
-    const direction = this.animationConfig.direction || 'right-to-left';
-
     const centerX = Math.floor((this.gridConfig.width - textWidth) / 2);
 
-    let startPos: number;
-    let endPos: number;
-    let moveDirection: number;
-    let isVertical = false;
+    const entry = phrase.entry || this.animationConfig.defaultEntry;
+    const exit = phrase.exit || this.animationConfig.defaultExit;
 
-    switch (direction) {
-      case 'left-to-right':
-        startPos = -textWidth;
-        endPos = this.animationConfig.stopAtCenter
-          ? centerX
-          : this.gridConfig.width;
-        moveDirection = 1;
-        break;
-      case 'right-to-left':
-        startPos = this.gridConfig.width;
-        endPos = this.animationConfig.stopAtCenter ? centerX : -textWidth;
-        moveDirection = -1;
-        break;
-      case 'center':
-        startPos = centerX;
-        endPos = centerX;
-        moveDirection = 0;
-        break;
-      case 'top-to-bottom':
-        startPos = -this.textHeight;
-        endPos = this.animationConfig.stopAtCenter
-          ? centerY
-          : this.gridConfig.height;
-        moveDirection = 1;
-        isVertical = true;
-        break;
-      case 'bottom-to-top':
-        startPos = this.gridConfig.height;
-        endPos = this.animationConfig.stopAtCenter ? centerY : -this.textHeight;
-        moveDirection = -1;
-        isVertical = true;
-        break;
-      default:
-        startPos = this.gridConfig.width;
-        endPos = this.animationConfig.stopAtCenter ? centerX : -textWidth;
-        moveDirection = -1;
-    }
+    let totalFrameCount = 0;
 
-    const scrollDistance = Math.abs(endPos - startPos);
-    const scrollFrames =
-      direction === 'center'
-        ? 1
-        : Math.ceil(scrollDistance / this.animationConfig.scrollSpeed);
+    // Generate entry frames
+    const entryFrames = this.generateTransitionFrames(
+      entry,
+      true,
+      centerX,
+      centerY,
+      textWidth,
+      phrase.text,
+    );
+    frames.push(...entryFrames);
+    totalFrameCount += entryFrames.length;
 
-    for (let i = 0; i < scrollFrames; i++) {
-      const currentPos =
-        startPos + i * this.animationConfig.scrollSpeed * moveDirection;
+    // Generate pause frames at center
+    for (let i = 0; i < this.animationConfig.pauseFrames; i++) {
       frames.push({
-        textX: isVertical ? centerX : currentPos,
-        textY: isVertical ? currentPos : centerY,
-        color: this.getColorAtFrame(i, scrollFrames),
-        text,
+        textX: centerX,
+        textY: centerY,
+        color: this.getColorAtFrame(totalFrameCount + i, totalFrameCount + this.animationConfig.pauseFrames),
+        text: phrase.text,
       });
     }
+    totalFrameCount += this.animationConfig.pauseFrames;
 
-    if (this.animationConfig.stopAtCenter || direction === 'center') {
-      const finalFrame = frames[frames.length - 1];
-      const finalX = finalFrame?.textX || (isVertical ? centerX : endPos);
-      const finalY = finalFrame?.textY || (isVertical ? endPos : centerY);
+    // Generate exit frames
+    if (exit !== 'stay' && exit !== 'none') {
+      const exitFrames = this.generateTransitionFrames(
+        exit,
+        false,
+        centerX,
+        centerY,
+        textWidth,
+        phrase.text,
+      );
+      frames.push(...exitFrames);
+    }
 
-      for (let i = 0; i < this.animationConfig.pauseFrames; i++) {
-        frames.push({
-          textX: finalX,
-          textY: finalY,
-          color: this.getColorAtFrame(
-            scrollFrames + i,
-            scrollFrames + this.animationConfig.pauseFrames,
-          ),
-          text,
-        });
-      }
-    } else {
-      const centerPos = isVertical ? centerY : centerX;
-      let pauseStartFrame = -1;
+    return frames;
+  }
 
-      for (let i = 0; i < frames.length; i++) {
-        const frame = frames[i];
-        if (!frame) continue;
-        const currentPos = isVertical ? frame.textY : frame.textX;
-        if (
-          (moveDirection === 1 && currentPos >= centerPos) ||
-          (moveDirection === -1 && currentPos <= centerPos)
-        ) {
-          pauseStartFrame = i;
-          break;
+  generateTransitionFrames(
+    transition: import('./config').TransitionDirection | import('./config').ExitTransition,
+    isEntry: boolean,
+    centerX: number,
+    centerY: number,
+    textWidth: number,
+    text: string,
+  ): Frame[] {
+    const frames: Frame[] = [];
+
+    let startX: number = centerX;
+    let startY: number = centerY;
+    let endX: number = centerX;
+    let endY: number = centerY;
+
+    switch (transition) {
+      case 'from-left':
+      case 'to-left':
+        if (transition === 'from-left') {
+          startX = -textWidth;
+          endX = centerX;
+        } else {
+          startX = centerX;
+          endX = -textWidth;
         }
-      }
-
-      if (pauseStartFrame >= 0 && this.animationConfig.pauseFrames > 0) {
-        const pauseFrame = frames[pauseStartFrame];
-        if (!pauseFrame) {
-          return frames;
+        break;
+      case 'from-right':
+      case 'to-right':
+        if (transition === 'from-right') {
+          startX = this.gridConfig.width;
+          endX = centerX;
+        } else {
+          startX = centerX;
+          endX = this.gridConfig.width;
         }
-        const pauseFrames: Frame[] = [];
-
-        for (let i = 0; i < this.animationConfig.pauseFrames; i++) {
-          pauseFrames.push({
-            textX: pauseFrame.textX,
-            textY: pauseFrame.textY,
-            color: this.getColorAtFrame(
-              pauseStartFrame + i,
-              scrollFrames + this.animationConfig.pauseFrames,
-            ),
-            text,
-          });
+        break;
+      case 'from-top':
+      case 'to-top':
+        if (transition === 'from-top') {
+          startY = -this.textHeight;
+          endY = centerY;
+        } else {
+          startY = centerY;
+          endY = -this.textHeight;
         }
+        break;
+      case 'from-bottom':
+      case 'to-bottom':
+        if (transition === 'from-bottom') {
+          startY = this.gridConfig.height;
+          endY = centerY;
+        } else {
+          startY = centerY;
+          endY = this.gridConfig.height;
+        }
+        break;
+      case 'center':
+        // no movement, just return empty frames
+        return frames;
+    }
 
-        frames.splice(pauseStartFrame, 0, ...pauseFrames);
-      }
+    const distanceX = Math.abs(endX - startX);
+    const distanceY = Math.abs(endY - startY);
+    const distance = Math.max(distanceX, distanceY);
+
+    if (distance === 0) return frames;
+
+    const frameCount = Math.ceil(distance / this.animationConfig.scrollSpeed);
+    const directionX = endX > startX ? 1 : endX < startX ? -1 : 0;
+    const directionY = endY > startY ? 1 : endY < startY ? -1 : 0;
+
+    for (let i = 0; i < frameCount; i++) {
+      const x = startX + i * this.animationConfig.scrollSpeed * directionX;
+      const y = startY + i * this.animationConfig.scrollSpeed * directionY;
+
+      frames.push({
+        textX: x,
+        textY: y,
+        color: this.getColorAtFrame(i, frameCount),
+        text,
+      });
     }
 
     return frames;
@@ -269,7 +278,7 @@ export class Animator {
       const scale = this.animationConfig.textScale || 1;
       const textWidth = this.textEngine.getTextWidth(phrase.text, 1) * scale;
       const phraseFrames = this.generatePhraseFrames(
-        phrase.text,
+        phrase,
         textWidth,
         centerY,
       );
