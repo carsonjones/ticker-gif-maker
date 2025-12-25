@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "readme-gfx",
+      "name": "marquee-creator",
       "dependencies": {
         "@napi-rs/canvas": "^0.1.86",
         "@types/gif-encoder": "^0.7.4",

@@ -260,7 +260,7 @@ export class Animator {
   generateFrames(): Frame[] {
     const allFrames: Frame[] = [];
     const vPadding = this.gridConfig.verticalPadding ?? 2;
-    const centerY = Math.floor((this.gridConfig.height - this.textHeight) / 2) + vPadding;
+    const centerY = vPadding + Math.floor((this.gridConfig.height - this.textHeight - vPadding * 2) / 2);
 
     for (const phrase of this.animationConfig.phrases) {
       // Add pause frames before this phrase

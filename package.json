@@ -1,5 +1,5 @@
 {
-  "name": "readme-gfx",
+  "name": "marquee-creator",
   "module": "index.ts",
   "type": "module",
   "private": true,
