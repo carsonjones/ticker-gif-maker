@@ -124,9 +124,23 @@ export class Animator {
   ): Frame[] {
     const frames: Frame[] = [];
     const hPadding = this.gridConfig.horizontalPadding ?? 0;
-    const centerX =
-      hPadding +
-      Math.floor((this.gridConfig.width - textWidth - hPadding * 2) / 2);
+
+    // Calculate available width after padding
+    const availableWidth = this.gridConfig.width - hPadding * 2;
+
+    // Center text within the available space
+    let centerX = hPadding + Math.floor((availableWidth - textWidth) / 2);
+
+    // Ensure text doesn't go outside padding boundaries
+    if (centerX < hPadding) {
+      centerX = hPadding;
+    }
+    if (centerX + textWidth > this.gridConfig.width - hPadding) {
+      centerX = this.gridConfig.width - hPadding - textWidth;
+      if (centerX < hPadding) {
+        centerX = hPadding;
+      }
+    }
 
     const entry = phrase.entry || this.animationConfig.defaultEntry;
     const exit = phrase.exit || this.animationConfig.defaultExit;
@@ -195,6 +209,7 @@ export class Animator {
     phrase?: import('./config').PhraseConfig,
   ): Frame[] {
     const frames: Frame[] = [];
+    const hPadding = this.gridConfig.horizontalPadding ?? 0;
 
     let startX: number = centerX;
     let startY: number = centerY;
@@ -205,21 +220,21 @@ export class Animator {
       case 'from-left':
       case 'to-left':
         if (transition === 'from-left') {
-          startX = -textWidth;
+          startX = hPadding - textWidth;
           endX = centerX;
         } else {
           startX = centerX;
-          endX = -textWidth;
+          endX = hPadding - textWidth;
         }
         break;
       case 'from-right':
       case 'to-right':
         if (transition === 'from-right') {
-          startX = this.gridConfig.width;
+          startX = this.gridConfig.width - hPadding;
           endX = centerX;
         } else {
           startX = centerX;
-          endX = this.gridConfig.width;
+          endX = this.gridConfig.width - hPadding;
         }
         break;
       case 'from-top':

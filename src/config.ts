@@ -56,6 +56,19 @@ export type OutputConfig = {
     colors?: number;
     lossy?: number;
   };
+  resize?: {
+    enabled: boolean;
+    maxWidth?: number;
+    maxHeight?: number;
+    method?:
+      | 'sample'
+      | 'mix'
+      | 'box'
+      | 'catrom'
+      | 'mitchell'
+      | 'lanczos2'
+      | 'lanczos3';
+  };
 };
 
 export type Config = {
@@ -67,25 +80,19 @@ export type Config = {
 export const DEFAULT_CONFIG: Config = {
   grid: {
     width: 600,
-    height: 56,
+    height: 300,
     pixelSize: 8,
     spacing: 2,
     pixelColor: '#00ff00',
     bgColor: '#000000',
     gridColor: '#1a1a1a',
     verticalPadding: 40,
-    horizontalPadding: 20,
+    horizontalPadding: 40,
   },
   animation: {
     phrases: [
       {
-        text: 'WELCOME',
-        pauseBeforeSeconds: 2,
-        pauseDuringSeconds: 2,
-        flashColors: ['#00ff00', '#ffff00', '#00ff00'],
-      },
-      {
-        text: "LET'S GIF",
+        text: 'HAPPY HOLIDAYS',
         pauseBeforeSeconds: 1,
         pauseDuringSeconds: 2,
         entry: 'from-top',
@@ -105,7 +112,7 @@ export const DEFAULT_CONFIG: Config = {
     ],
     flashCurve: 'ease',
     fps: 20, // lower FPS = faster export
-    textScale: 9,
+    textScale: 6,
     defaultEntry: 'from-left',
     defaultExit: 'to-right',
   },
@@ -116,7 +123,13 @@ export const DEFAULT_CONFIG: Config = {
     compress: {
       enabled: true,
       colors: 256,
-      lossy: 80,
+      lossy: 20,
+    },
+    resize: {
+      enabled: true,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      method: 'sample', // best for pixel art - no antialiasing
     },
   },
 };

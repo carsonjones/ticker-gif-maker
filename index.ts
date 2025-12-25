@@ -43,7 +43,11 @@ async function main() {
   );
 
   console.log(`Exporting GIF to ${config.output.path}...`);
-  await gifExporter.exportGif(contexts, config.output.path);
+  await gifExporter.exportGif(
+    contexts,
+    config.output.path,
+    config.output.resize,
+  );
 
   console.log('Done!');
 }
