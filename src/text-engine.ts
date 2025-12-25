@@ -31,6 +31,7 @@ export class TextEngine {
 
   constructor(fontPath: string) {
     const fontFile = Bun.file(fontPath);
+    // @ts-expect-error files, man
     this.font = fontFile.json() as FontDefinition;
   }
 
@@ -57,7 +58,7 @@ export class TextEngine {
     if (!charLines || charLines.length === 0) {
       return 0;
     }
-    return charLines[0].length;
+    return charLines[0]?.length || 0;
   }
 
   textToGrid(text: string, charSpacing: number = 1): PixelGrid {
@@ -90,7 +91,7 @@ export class TextEngine {
     let currentX = 0;
     for (let gridIndex = 0; gridIndex < grids.length; gridIndex++) {
       const grid = grids[gridIndex];
-      const gridWidth = grid[0]?.length || 0;
+      const gridWidth = grid?.[0]?.length || 0;
 
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < gridWidth; x++) {

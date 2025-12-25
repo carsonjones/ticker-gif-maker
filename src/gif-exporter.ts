@@ -23,12 +23,17 @@ export class GifExporter {
     mkdirSync(tempDir, { recursive: true });
 
     try {
-      // Export frames as PNGs
+      // Export frames as PNGs in parallel
       console.log(`Exporting ${contexts.length} frames...`);
-      for (let i = 0; i < contexts.length; i++) {
-        const buffer = await contexts[i]!.canvas.encode('png');
-        await Bun.write(`${tempDir}/frame-${String(i).padStart(5, '0')}.png`, buffer);
-      }
+      await Promise.all(
+        contexts.map(async (ctx, i) => {
+          const buffer = await ctx.canvas.encode('png');
+          await Bun.write(
+            `${tempDir}/frame-${String(i).padStart(5, '0')}.png`,
+            buffer,
+          );
+        }),
+      );
 
       // Use ffmpeg to create GIF
       console.log('Encoding GIF with ffmpeg...');
