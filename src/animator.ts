@@ -1,6 +1,7 @@
+import type { SKRSContext2D } from '@napi-rs/canvas';
 import type { AnimationConfig, GridConfig } from './config';
 import { Renderer } from './renderer';
-import { TextEngine } from './text-engine';
+import type { TextEngine } from './text-engine';
 
 type Frame = {
   textX: number;
@@ -18,7 +19,7 @@ export class Animator {
   constructor(
     animationConfig: AnimationConfig,
     gridConfig: GridConfig,
-    textEngine: TextEngine
+    textEngine: TextEngine,
   ) {
     this.animationConfig = animationConfig;
     this.gridConfig = gridConfig;
@@ -28,7 +29,7 @@ export class Animator {
   }
 
   easeInOutQuad(t: number): number {
-    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
   }
 
   easeBounce(t: number): number {
@@ -38,11 +39,14 @@ export class Animator {
     if (t < 1 / d1) {
       return n1 * t * t;
     } else if (t < 2 / d1) {
-      return n1 * (t -= 1.5 / d1) * t + 0.75;
+      const t2 = t - 1.5 / d1;
+      return n1 * t2 * t2 + 0.75;
     } else if (t < 2.5 / d1) {
-      return n1 * (t -= 2.25 / d1) * t + 0.9375;
+      const t2 = t - 2.25 / d1;
+      return n1 * t2 * t2 + 0.9375;
     } else {
-      return n1 * (t -= 2.625 / d1) * t + 0.984375;
+      const t2 = t - 2.625 / d1;
+      return n1 * t2 * t2 + 0.984375;
     }
   }
 
@@ -80,92 +84,135 @@ export class Animator {
   }
 
   getColorAtFrame(frameIndex: number, totalFrames: number): string {
-    if (!this.animationConfig.flashColors || this.animationConfig.flashColors.length === 0) {
+    if (
+      !this.animationConfig.flashColors ||
+      this.animationConfig.flashColors.length === 0
+    ) {
       return this.gridConfig.pixelColor;
     }
 
     const colors = this.animationConfig.flashColors;
     if (colors.length === 1) {
-      return colors[0];
+      return colors[0]!;
     }
 
     const t = frameIndex / Math.max(1, totalFrames - 1);
-    const easedT = this.applyEasing(t, this.animationConfig.flashCurve || 'linear');
+    const easedT = this.applyEasing(
+      t,
+      this.animationConfig.flashCurve || 'linear',
+    );
 
     const segmentCount = colors.length - 1;
     const segmentIndex = Math.min(
       Math.floor(easedT * segmentCount),
-      segmentCount - 1
+      segmentCount - 1,
     );
-    const segmentT = (easedT * segmentCount) - segmentIndex;
+    const segmentT = easedT * segmentCount - segmentIndex;
 
     return this.interpolateColor(
-      colors[segmentIndex],
-      colors[segmentIndex + 1],
-      segmentT
+      colors[segmentIndex]!,
+      colors[segmentIndex + 1]!,
+      segmentT,
     );
   }
 
-  generatePhraseFrames(text: string, textWidth: number, centerY: number): Frame[] {
+  generatePhraseFrames(
+    text: string,
+    textWidth: number,
+    centerY: number,
+  ): Frame[] {
     const frames: Frame[] = [];
     const direction = this.animationConfig.direction || 'right-to-left';
 
-    let startX: number;
-    let endX: number;
-    let moveDirection: number;
+    const centerX = Math.floor((this.gridConfig.width - textWidth) / 2);
 
-    if (direction === 'left-to-right') {
-      startX = -textWidth;
-      if (this.animationConfig.stopAtCenter) {
-        endX = Math.floor((this.gridConfig.width - textWidth) / 2);
-      } else {
-        endX = this.gridConfig.width;
-      }
-      moveDirection = 1;
-    } else {
-      startX = this.gridConfig.width;
-      if (this.animationConfig.stopAtCenter) {
-        endX = Math.floor((this.gridConfig.width - textWidth) / 2);
-      } else {
-        endX = -textWidth;
-      }
-      moveDirection = -1;
+    let startPos: number;
+    let endPos: number;
+    let moveDirection: number;
+    let isVertical = false;
+
+    switch (direction) {
+      case 'left-to-right':
+        startPos = -textWidth;
+        endPos = this.animationConfig.stopAtCenter
+          ? centerX
+          : this.gridConfig.width;
+        moveDirection = 1;
+        break;
+      case 'right-to-left':
+        startPos = this.gridConfig.width;
+        endPos = this.animationConfig.stopAtCenter ? centerX : -textWidth;
+        moveDirection = -1;
+        break;
+      case 'center':
+        startPos = centerX;
+        endPos = centerX;
+        moveDirection = 0;
+        break;
+      case 'top-to-bottom':
+        startPos = -this.textHeight;
+        endPos = this.animationConfig.stopAtCenter
+          ? centerY
+          : this.gridConfig.height;
+        moveDirection = 1;
+        isVertical = true;
+        break;
+      case 'bottom-to-top':
+        startPos = this.gridConfig.height;
+        endPos = this.animationConfig.stopAtCenter ? centerY : -this.textHeight;
+        moveDirection = -1;
+        isVertical = true;
+        break;
+      default:
+        startPos = this.gridConfig.width;
+        endPos = this.animationConfig.stopAtCenter ? centerX : -textWidth;
+        moveDirection = -1;
     }
 
-    const scrollDistance = Math.abs(endX - startX);
-    const scrollFrames = Math.ceil(scrollDistance / this.animationConfig.scrollSpeed);
+    const scrollDistance = Math.abs(endPos - startPos);
+    const scrollFrames =
+      direction === 'center'
+        ? 1
+        : Math.ceil(scrollDistance / this.animationConfig.scrollSpeed);
 
     for (let i = 0; i < scrollFrames; i++) {
-      const currentX = startX + i * this.animationConfig.scrollSpeed * moveDirection;
+      const currentPos =
+        startPos + i * this.animationConfig.scrollSpeed * moveDirection;
       frames.push({
-        textX: currentX,
-        textY: centerY,
+        textX: isVertical ? centerX : currentPos,
+        textY: isVertical ? currentPos : centerY,
         color: this.getColorAtFrame(i, scrollFrames),
         text,
       });
     }
 
-    if (this.animationConfig.stopAtCenter) {
-      const finalX = frames[frames.length - 1]?.textX || endX;
+    if (this.animationConfig.stopAtCenter || direction === 'center') {
+      const finalFrame = frames[frames.length - 1];
+      const finalX = finalFrame?.textX || (isVertical ? centerX : endPos);
+      const finalY = finalFrame?.textY || (isVertical ? endPos : centerY);
+
       for (let i = 0; i < this.animationConfig.pauseFrames; i++) {
         frames.push({
           textX: finalX,
-          textY: centerY,
+          textY: finalY,
           color: this.getColorAtFrame(
             scrollFrames + i,
-            scrollFrames + this.animationConfig.pauseFrames
+            scrollFrames + this.animationConfig.pauseFrames,
           ),
           text,
         });
       }
     } else {
-      const centerX = Math.floor((this.gridConfig.width - textWidth) / 2);
-
+      const centerPos = isVertical ? centerY : centerX;
       let pauseStartFrame = -1;
+
       for (let i = 0; i < frames.length; i++) {
+        const frame = frames[i];
+        if (!frame) continue;
+        const currentPos = isVertical ? frame.textY : frame.textX;
         if (
-          (moveDirection === 1 && frames[i].textX >= centerX) ||
-          (moveDirection === -1 && frames[i].textX <= centerX)
+          (moveDirection === 1 && currentPos >= centerPos) ||
+          (moveDirection === -1 && currentPos <= centerPos)
         ) {
           pauseStartFrame = i;
           break;
@@ -173,16 +220,19 @@ export class Animator {
       }
 
       if (pauseStartFrame >= 0 && this.animationConfig.pauseFrames > 0) {
-        const pauseX = frames[pauseStartFrame].textX;
+        const pauseFrame = frames[pauseStartFrame];
+        if (!pauseFrame) {
+          return frames;
+        }
         const pauseFrames: Frame[] = [];
 
         for (let i = 0; i < this.animationConfig.pauseFrames; i++) {
           pauseFrames.push({
-            textX: pauseX,
-            textY: centerY,
+            textX: pauseFrame.textX,
+            textY: pauseFrame.textY,
             color: this.getColorAtFrame(
               pauseStartFrame + i,
-              scrollFrames + this.animationConfig.pauseFrames
+              scrollFrames + this.animationConfig.pauseFrames,
             ),
             text,
           });
@@ -202,7 +252,9 @@ export class Animator {
     for (const phrase of this.animationConfig.phrases) {
       // Add pause frames before this phrase
       if (phrase.pauseBeforeSeconds && phrase.pauseBeforeSeconds > 0) {
-        const pauseFrameCount = Math.ceil(phrase.pauseBeforeSeconds * this.animationConfig.fps);
+        const pauseFrameCount = Math.ceil(
+          phrase.pauseBeforeSeconds * this.animationConfig.fps,
+        );
         for (let i = 0; i < pauseFrameCount; i++) {
           allFrames.push({
             textX: -10000, // offscreen
@@ -216,20 +268,24 @@ export class Animator {
       // Generate frames for this phrase
       const scale = this.animationConfig.textScale || 1;
       const textWidth = this.textEngine.getTextWidth(phrase.text, 1) * scale;
-      const phraseFrames = this.generatePhraseFrames(phrase.text, textWidth, centerY);
+      const phraseFrames = this.generatePhraseFrames(
+        phrase.text,
+        textWidth,
+        centerY,
+      );
       allFrames.push(...phraseFrames);
     }
 
     return allFrames;
   }
 
-  async renderFrames(): Promise<any[]> {
+  async renderFrames(): Promise<SKRSContext2D[]> {
     const frames = this.generateFrames();
-    const contexts: any[] = [];
+    const contexts: SKRSContext2D[] = [];
     const scale = this.animationConfig.textScale || 1;
 
     // Cache text grids to avoid re-computing
-    const textGridCache = new Map<string, any>();
+    const textGridCache = new Map<string, boolean[][]>();
 
     for (const frame of frames) {
       const renderer = new Renderer(this.gridConfig);
@@ -246,7 +302,12 @@ export class Animator {
           textGridCache.set(frame.text, textGrid);
         }
 
-        renderer.renderTextGrid(textGrid, frame.textX, frame.textY, frame.color);
+        renderer.renderTextGrid(
+          textGrid,
+          frame.textX,
+          frame.textY,
+          frame.color,
+        );
       }
 
       const ctx = renderer.getContext();

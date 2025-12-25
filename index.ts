@@ -1,9 +1,9 @@
-import { DEFAULT_CONFIG } from './src/config';
-import { TextEngine } from './src/text-engine';
 import { Animator } from './src/animator';
+import { compressGif } from './src/compress';
+import { DEFAULT_CONFIG } from './src/config';
 import { GifExporter } from './src/gif-exporter';
 import { generatePreview } from './src/preview';
-import { compressGif } from './src/compress';
+import { TextEngine } from './src/text-engine';
 
 async function main() {
   const config = DEFAULT_CONFIG;
@@ -14,7 +14,12 @@ async function main() {
   if (config.output.previewMode) {
     console.log('Preview mode - generating single frame PNG...');
     const previewPath = config.output.previewPath || 'output/preview.png';
-    await generatePreview(config.animation, config.grid, textEngine, previewPath);
+    await generatePreview(
+      config.animation,
+      config.grid,
+      textEngine,
+      previewPath,
+    );
     console.log(`Preview saved to ${previewPath}`);
     return;
   }
@@ -27,13 +32,15 @@ async function main() {
   const contexts = await animator.renderFrames();
   console.log(`Generated ${contexts.length} frames`);
 
-  const canvasWidth = config.grid.width * (config.grid.pixelSize + config.grid.spacing);
-  const canvasHeight = config.grid.height * (config.grid.pixelSize + config.grid.spacing);
+  const canvasWidth =
+    config.grid.width * (config.grid.pixelSize + config.grid.spacing);
+  const canvasHeight =
+    config.grid.height * (config.grid.pixelSize + config.grid.spacing);
 
   const gifExporter = new GifExporter(
     canvasWidth,
     canvasHeight,
-    config.animation.fps
+    config.animation.fps,
   );
 
   console.log(`Exporting GIF to ${config.output.path}...`);

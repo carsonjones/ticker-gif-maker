@@ -1,12 +1,12 @@
-import { createCanvas } from '@napi-rs/canvas';
+import { type Canvas, createCanvas, type SKRSContext2D } from '@napi-rs/canvas';
 import type { GridConfig } from './config';
 
 type PixelGrid = boolean[][];
 type Color = string;
 
 export class Renderer {
-  private canvas: any;
-  private ctx: any;
+  private canvas: Canvas;
+  private ctx: SKRSContext2D;
   private config: GridConfig;
   private canvasWidth: number;
   private canvasHeight: number;
@@ -29,7 +29,8 @@ export class Renderer {
   }
 
   renderGrid(): void {
-    const { r, g, b } = this.parseHexColor(this.config.gridColor!);
+    const gridColor = this.config.gridColor || '#000000';
+    const { r, g, b } = this.parseHexColor(gridColor);
     this.ctx.fillStyle = `rgb(${r},${g},${b})`;
 
     for (let gridY = 0; gridY < this.config.height; gridY++) {
@@ -62,7 +63,7 @@ export class Renderer {
     textGrid: PixelGrid,
     offsetX: number,
     offsetY: number,
-    color: Color
+    color: Color,
   ): void {
     for (let y = 0; y < textGrid.length; y++) {
       const row = textGrid[y];
@@ -86,11 +87,11 @@ export class Renderer {
     }
   }
 
-  getCanvas(): any {
+  getCanvas(): Canvas {
     return this.canvas;
   }
 
-  getContext(): any {
+  getContext(): SKRSContext2D {
     return this.ctx;
   }
 

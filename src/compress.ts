@@ -8,7 +8,7 @@ export type CompressionConfig = {
 
 export async function compressGif(
   inputPath: string,
-  compressionConfig: CompressionConfig
+  compressionConfig: CompressionConfig,
 ): Promise<void> {
   if (!compressionConfig.enabled) return;
 

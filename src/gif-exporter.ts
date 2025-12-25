@@ -1,3 +1,5 @@
+import type { CanvasRenderingContext2D } from '@napi-rs/canvas';
+// @ts-expect-error - gif-encoder-2 missing type defs
 import GifEncoder from 'gif-encoder-2';
 
 export class GifExporter {
@@ -11,7 +13,10 @@ export class GifExporter {
     this.fps = fps;
   }
 
-  async exportGif(contexts: any[], outputPath: string): Promise<void> {
+  async exportGif(
+    contexts: CanvasRenderingContext2D[],
+    outputPath: string,
+  ): Promise<void> {
     const encoder = new GifEncoder(this.width, this.height, 'octree');
 
     encoder.setRepeat(0);

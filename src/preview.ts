@@ -1,12 +1,12 @@
 import type { AnimationConfig, GridConfig } from './config';
 import { Renderer } from './renderer';
-import { TextEngine } from './text-engine';
+import type { TextEngine } from './text-engine';
 
 export async function generatePreview(
   animationConfig: AnimationConfig,
   gridConfig: GridConfig,
   textEngine: TextEngine,
-  outputPath: string
+  outputPath: string,
 ): Promise<void> {
   // Use first phrase for preview
   const text = animationConfig.phrases[0]?.text || '';

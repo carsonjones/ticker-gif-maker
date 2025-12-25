@@ -22,7 +22,12 @@ export type AnimationConfig = {
   flashCurve?: 'linear' | 'ease' | 'bounce';
   fps: number;
   textScale?: number;
-  direction?: 'left-to-right' | 'right-to-left' | 'center' | 'top-to-bottom' | 'bottom-to-top';
+  direction?:
+    | 'left-to-right'
+    | 'right-to-left'
+    | 'center'
+    | 'top-to-bottom'
+    | 'bottom-to-top';
 };
 
 export type OutputConfig = {
@@ -54,8 +59,8 @@ export const DEFAULT_CONFIG: Config = {
   },
   animation: {
     phrases: [
-      { text: "HOWDY", pauseBeforeSeconds: 0 },
-      { text: "FOLKS", pauseBeforeSeconds: 1 },
+      { text: 'HOWDY', pauseBeforeSeconds: 0 },
+      { text: 'FOLKS', pauseBeforeSeconds: 1 },
     ],
     scrollSpeed: 4,
     pauseFrames: 30,

@@ -7,7 +7,23 @@ type FontDefinition = {
 type PixelGrid = boolean[][];
 
 const BLOCK_CHARS = new Set([
-  '█', '▀', '▄', '▌', '▐', '▖', '▗', '▘', '▝', '▞', '▟', '▙', '▚', '▛', '▜', '▀', '▄'
+  '█',
+  '▀',
+  '▄',
+  '▌',
+  '▐',
+  '▖',
+  '▗',
+  '▘',
+  '▝',
+  '▞',
+  '▟',
+  '▙',
+  '▚',
+  '▛',
+  '▜',
+  '▀',
+  '▄',
 ]);
 
 export class TextEngine {
@@ -68,7 +84,7 @@ export class TextEngine {
     }, 0);
 
     const composedGrid: PixelGrid = Array.from({ length: height }, () =>
-      Array(totalWidth).fill(false)
+      Array(totalWidth).fill(false),
     );
 
     let currentX = 0;
@@ -78,7 +94,7 @@ export class TextEngine {
 
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < gridWidth; x++) {
-          if (grid[y] && grid[y][x]) {
+          if (grid[y]?.[x]) {
             composedGrid[y][currentX + x] = true;
           }
         }
@@ -117,7 +133,7 @@ export class TextEngine {
     const scaledHeight = grid.length * scale;
     const scaledWidth = (grid[0]?.length || 0) * scale;
     const scaledGrid: PixelGrid = Array.from({ length: scaledHeight }, () =>
-      Array(scaledWidth).fill(false)
+      Array(scaledWidth).fill(false),
     );
 
     for (let y = 0; y < grid.length; y++) {
