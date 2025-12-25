@@ -77,26 +77,18 @@ export const DEFAULT_CONFIG: Config = {
   animation: {
     phrases: [
       {
-        text: 'HOWDY',
+        text: 'WELCOME',
         pauseBeforeSeconds: 2,
         pauseDuringSeconds: 2,
         flashColors: ['#00ff00', '#ffff00', '#00ff00'],
       },
       {
-        text: "I'M CARSON",
+        text: "LET'S GIF",
         pauseBeforeSeconds: 1,
         pauseDuringSeconds: 2,
         entry: 'from-top',
         exit: 'to-bottom',
         flashColors: ['#ff00ff', '#00ffff', '#ff00ff'],
-      },
-      {
-        text: "LET'S BUILD",
-        pauseBeforeSeconds: 2,
-        pauseDuringSeconds: 0,
-        entry: 'from-top',
-        exit: 'to-bottom',
-        flashColors: ['#ff0000', '#ff8800', '#ffff00', '#ff8800', '#ff0000'],
       },
     ],
     scrollSpeed: 4,
