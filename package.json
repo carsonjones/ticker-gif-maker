@@ -1,5 +1,5 @@
 {
-  "name": "marquee-creator",
+  "name": "ticker-gif-maker",
   "module": "index.ts",
   "type": "module",
   "private": true,
