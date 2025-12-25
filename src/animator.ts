@@ -83,9 +83,14 @@ export class Animator {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }
 
-  getColorAtFrame(frameIndex: number, totalFrames: number, phrase?: import('./config').PhraseConfig): string {
+  getColorAtFrame(
+    frameIndex: number,
+    totalFrames: number,
+    phrase?: import('./config').PhraseConfig,
+  ): string {
     const colors = phrase?.flashColors || this.animationConfig.flashColors;
-    const curve = phrase?.flashCurve || this.animationConfig.flashCurve || 'linear';
+    const curve =
+      phrase?.flashCurve || this.animationConfig.flashCurve || 'linear';
 
     if (!colors || colors.length === 0) {
       return this.gridConfig.pixelColor;
@@ -118,7 +123,10 @@ export class Animator {
     centerY: number,
   ): Frame[] {
     const frames: Frame[] = [];
-    const centerX = Math.floor((this.gridConfig.width - textWidth) / 2);
+    const hPadding = this.gridConfig.horizontalPadding ?? 0;
+    const centerX =
+      hPadding +
+      Math.floor((this.gridConfig.width - textWidth - hPadding * 2) / 2);
 
     const entry = phrase.entry || this.animationConfig.defaultEntry;
     const exit = phrase.exit || this.animationConfig.defaultExit;
@@ -139,15 +147,20 @@ export class Animator {
     totalFrameCount += entryFrames.length;
 
     // Generate pause frames at center
-    const pauseFrameCount = phrase.pauseDuringSeconds !== undefined
-      ? Math.ceil(phrase.pauseDuringSeconds * this.animationConfig.fps)
-      : this.animationConfig.pauseFrames;
+    const pauseFrameCount =
+      phrase.pauseDuringSeconds !== undefined
+        ? Math.ceil(phrase.pauseDuringSeconds * this.animationConfig.fps)
+        : this.animationConfig.pauseFrames;
 
     for (let i = 0; i < pauseFrameCount; i++) {
       frames.push({
         textX: centerX,
         textY: centerY,
-        color: this.getColorAtFrame(totalFrameCount + i, totalFrameCount + pauseFrameCount, phrase),
+        color: this.getColorAtFrame(
+          totalFrameCount + i,
+          totalFrameCount + pauseFrameCount,
+          phrase,
+        ),
         text: phrase.text,
       });
     }
@@ -171,7 +184,9 @@ export class Animator {
   }
 
   generateTransitionFrames(
-    transition: import('./config').TransitionDirection | import('./config').ExitTransition,
+    transition:
+      | import('./config').TransitionDirection
+      | import('./config').ExitTransition,
     isEntry: boolean,
     centerX: number,
     centerY: number,
@@ -260,7 +275,9 @@ export class Animator {
   generateFrames(): Frame[] {
     const allFrames: Frame[] = [];
     const vPadding = this.gridConfig.verticalPadding ?? 2;
-    const centerY = vPadding + Math.floor((this.gridConfig.height - this.textHeight - vPadding * 2) / 2);
+    const centerY =
+      vPadding +
+      Math.floor((this.gridConfig.height - this.textHeight - vPadding * 2) / 2);
 
     for (const phrase of this.animationConfig.phrases) {
       // Add pause frames before this phrase
@@ -292,9 +309,14 @@ export class Animator {
     return allFrames;
   }
 
-  async renderFrames(): Promise<{ canvas: import('@napi-rs/canvas').Canvas; context: SKRSContext2D }[]> {
+  async renderFrames(): Promise<
+    { canvas: import('@napi-rs/canvas').Canvas; context: SKRSContext2D }[]
+  > {
     const frames = this.generateFrames();
-    const results: { canvas: import('@napi-rs/canvas').Canvas; context: SKRSContext2D }[] = [];
+    const results: {
+      canvas: import('@napi-rs/canvas').Canvas;
+      context: SKRSContext2D;
+    }[] = [];
     const scale = this.animationConfig.textScale || 1;
 
     // Cache text grids to avoid re-computing

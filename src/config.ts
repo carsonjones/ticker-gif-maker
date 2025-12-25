@@ -7,6 +7,7 @@ export type GridConfig = {
   bgColor: string;
   gridColor?: string;
   verticalPadding?: number;
+  horizontalPadding?: number;
 };
 
 export type TransitionDirection =
@@ -66,13 +67,14 @@ export type Config = {
 export const DEFAULT_CONFIG: Config = {
   grid: {
     width: 600,
-    height: 48,
+    height: 56,
     pixelSize: 8,
     spacing: 2,
     pixelColor: '#00ff00',
     bgColor: '#000000',
     gridColor: '#1a1a1a',
-    verticalPadding: 4,
+    verticalPadding: 40,
+    horizontalPadding: 20,
   },
   animation: {
     phrases: [
